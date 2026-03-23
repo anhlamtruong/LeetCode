@@ -31,6 +31,6 @@ git pull origin master
 # 5. Bring those changes back to local develop
 echo "🔄 Syncing local develop..."
 git checkout develop
-git merge master
+git merge master -m "$msg"
 
 echo "✅ All synced! You are now back on the develop branch."
