@@ -15,5 +15,6 @@ services:
       INTERVAL_SECONDS: "60"
       DAY_SECONDS: "86400"
       AUTO_FOLDER_ROOT: auto-random-folders
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
       TZ: UTC
     restart: unless-stopped
