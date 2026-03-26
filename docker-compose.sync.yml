@@ -1,0 +1,20 @@
+services:
+  leetcode-sync-bot:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: leetcode-sync-bot
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+      - ~/.config/gh:/root/.config/gh:ro
+      - ~/.ssh:/root/.ssh:ro
+    environment:
+      REPO_DIR: /workspace
+      RUNS_PER_DAY: "15"
+      INTERVAL_SECONDS: "60"
+      DAY_SECONDS: "86400"
+      AUTO_FOLDER_ROOT: auto-random-folders
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      TZ: UTC
+    restart: unless-stopped
