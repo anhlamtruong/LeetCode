@@ -33,6 +33,22 @@ setup_github_auth() {
         gh auth login --with-token <<<"$GITHUB_TOKEN" >/dev/null 2>&1 || true
         git config --global url."https://x-access-token:${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
     fi
+
+    # If gh has a valid login, wire git to use gh as the credential helper.
+    if gh auth status -h github.com >/dev/null 2>&1; then
+        gh auth setup-git >/dev/null 2>&1 || true
+    fi
+}
+
+ensure_git_auth_ready() {
+    if git ls-remote --heads origin >/dev/null 2>&1; then
+        return
+    fi
+
+    echo "Git authentication to origin failed."
+    echo "Set a valid GITHUB_TOKEN for the container (recommended), or refresh gh auth in ~/.config/gh and restart."
+    echo "Current origin: $(git remote get-url origin 2>/dev/null || echo unknown)"
+    exit 1
 }
 
 random_token() {
@@ -99,6 +115,7 @@ run_once() {
 echo "Automation started at $(date -Iseconds)"
 setup_git_config
 setup_github_auth
+ensure_git_auth_ready
 
 while true; do
     echo "Starting daily cycle at $(date -Iseconds)"
