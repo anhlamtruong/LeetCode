@@ -7,6 +7,7 @@ RUNS_PER_DAY="${RUNS_PER_DAY:-15}"
 INTERVAL_SECONDS="${INTERVAL_SECONDS:-60}"
 DAY_SECONDS="${DAY_SECONDS:-86400}"
 AUTO_FOLDER_ROOT="${AUTO_FOLDER_ROOT:-auto-random-folders}"
+SYNC_ENSURE_RANDOM_FILE="${SYNC_ENSURE_RANDOM_FILE:-1}"
 GIT_USER_NAME="${GIT_USER_NAME:-leetcode-sync-bot}"
 GIT_USER_EMAIL="${GIT_USER_EMAIL:-leetcode-sync-bot@users.noreply.github.com}"
 GITHUB_TOKEN="${GITHUB_TOKEN:-}"
@@ -35,7 +36,7 @@ setup_github_auth() {
 }
 
 random_token() {
-    LC_ALL=C tr -dc 'a-z0-9' </dev/urandom | head -c 8
+    od -An -N4 -tx1 /dev/urandom | tr -d ' \n'
 }
 
 ensure_folder_pool() {
@@ -89,7 +90,7 @@ run_once() {
 
     local commit_msg="auto-sync: add ${rel_path}"
     echo "Running sync.sh for ${rel_path}"
-    if ! SYNC_COMMIT_MESSAGE="$commit_msg" ./sync.sh; then
+    if ! SYNC_COMMIT_MESSAGE="$commit_msg" SYNC_RANDOM_FILE_PATH="$rel_path" SYNC_ENSURE_RANDOM_FILE="$SYNC_ENSURE_RANDOM_FILE" ./sync.sh; then
         echo "sync.sh failed for ${rel_path}. Will retry in next interval."
         return 1
     fi

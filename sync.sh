@@ -1,5 +1,43 @@
 #!/bin/bash
 
+set -euo pipefail
+
+AUTO_FOLDER_ROOT="${AUTO_FOLDER_ROOT:-auto-random-folders}"
+SYNC_ENSURE_RANDOM_FILE="${SYNC_ENSURE_RANDOM_FILE:-1}"
+
+random_token() {
+	od -An -N4 -tx1 /dev/urandom | tr -d ' \n'
+}
+
+create_random_text_file() {
+	mkdir -p "$AUTO_FOLDER_ROOT"
+
+	local file_name="random-$(date +%Y%m%d-%H%M%S)-$(random_token).txt"
+	local file_path="$AUTO_FOLDER_ROOT/$file_name"
+
+	{
+		echo "Random note: $(random_token)"
+		echo "Created at: $(date -Iseconds)"
+		echo "Payload: $(random_token)"
+	} >"$file_path"
+
+	printf '%s\n' "$file_path"
+}
+
+ensure_random_file_for_sync() {
+	if [ -n "${SYNC_RANDOM_FILE_PATH:-}" ] && [ -f "${SYNC_RANDOM_FILE_PATH}" ]; then
+		printf '%s\n' "${SYNC_RANDOM_FILE_PATH}"
+		return
+	fi
+
+	create_random_text_file
+}
+
+if [ "$SYNC_ENSURE_RANDOM_FILE" = "1" ]; then
+	generated_file="$(ensure_random_file_for_sync)"
+	echo "Generated file before sync: ${generated_file}"
+fi
+
 msg="${1:-${SYNC_COMMIT_MESSAGE:-}}"
 
 if [ -z "$msg" ]; then
