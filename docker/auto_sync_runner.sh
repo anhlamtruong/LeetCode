@@ -41,14 +41,17 @@ setup_github_auth() {
 }
 
 ensure_git_auth_ready() {
-    if git ls-remote --heads origin >/dev/null 2>&1; then
+    local current_branch
+    current_branch="$(git rev-parse --abbrev-ref HEAD)"
+
+    if git push --dry-run origin "HEAD:${current_branch}" >/dev/null 2>&1; then
         return
     fi
 
-    echo "Git authentication to origin failed."
+    echo "Git push authentication to origin failed."
     echo "Set a valid GITHUB_TOKEN for the container (recommended), or refresh gh auth in ~/.config/gh and restart."
     echo "Current origin: $(git remote get-url origin 2>/dev/null || echo unknown)"
-    exit 1
+    return 1
 }
 
 random_token() {
@@ -101,6 +104,11 @@ create_random_text_file() {
 }
 
 run_once() {
+    if ! ensure_git_auth_ready; then
+        echo "Skipping this run due to missing Git push authentication."
+        return 1
+    fi
+
     local rel_path
     rel_path="$(create_random_text_file)"
 
@@ -115,7 +123,6 @@ run_once() {
 echo "Automation started at $(date -Iseconds)"
 setup_git_config
 setup_github_auth
-ensure_git_auth_ready
 
 while true; do
     echo "Starting daily cycle at $(date -Iseconds)"
